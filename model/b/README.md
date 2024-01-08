@@ -1,6 +1,6 @@
 # Model
 
-This python project will run model a
+This python project will run model a.
 
 ## Build
 
