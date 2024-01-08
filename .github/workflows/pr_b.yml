@@ -7,6 +7,11 @@ on:
     paths:
       - 'model/b/**'
 
+permissions:
+  id-token: write
+  contents: read
+  packages: write
+
 jobs:
   style:
     uses: ./.github/workflows/style.yml
