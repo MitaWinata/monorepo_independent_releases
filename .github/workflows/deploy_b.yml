@@ -8,8 +8,9 @@ on:
       - 'model/b/**'
 
 permissions:
+  contents: write
+  pull-requests: write
   id-token: write
-  contents: read
   packages: write
 
 jobs:
