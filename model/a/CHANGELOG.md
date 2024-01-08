@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.0](https://github.com/MitaWinata/monorepo_independent_releases/compare/a-v0.1.0...a-v0.2.0) (2024-01-08)
+
+
+### Features
+
+* a feat 4 ([60d813b](https://github.com/MitaWinata/monorepo_independent_releases/commit/60d813bf3dc236a0563427f3dad5bfdb2ec21e44))
+* b feat 4 ([081e21a](https://github.com/MitaWinata/monorepo_independent_releases/commit/081e21ae9f012706e4e434ab313f64e87fd70cac))
+
 ## 0.1.0 (2024-01-08)
 
 
