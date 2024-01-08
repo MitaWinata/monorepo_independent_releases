@@ -1,0 +1,74 @@
+name: BuildPublishImage
+
+on:
+  workflow_call:
+    inputs:
+      build_context:
+        description: 'build_context'
+        required: false
+        type: string
+      image_tag:
+        description: 'Image tag'
+        required: false
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+  packages: write
+
+env:
+  ACR_NAME: "monorepopwin.azurecr.io"
+
+jobs:
+  BuildDocker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 'Az CLI login'
+        uses: azure/login@v1
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.ACR_NAME }}/${{ inputs.build_context }}
+          tags: |
+            type=edge,branch=main
+            type=ref,event=tag
+            type=ref,event=pr
+            type=raw, ${{ inputs.image_tag}}
+
+      - name: Log into azurecr registry
+        run: |
+          TOKEN=$(az acr login --name ${{ env.ACR_NAME }} --expose-token --output tsv --query accessToken)
+          echo "::add-mask::${TOKEN}"
+          docker login ${{ env.ACR_NAME }} --username 00000000-0000-0000-0000-000000000000 --password-stdin <<< $TOKEN
+        shell: bash
+
+      - name: Build, push if not PR
+        uses: docker/build-push-action@v5
+        with:
+          context: model/${{ inputs.build_context }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+
+      - name: Azure Logout
+        if: always()
+        run: |
+          az logout
+          az cache purge
+          az account clear
+        shell: bash

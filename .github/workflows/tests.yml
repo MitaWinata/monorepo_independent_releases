@@ -1,0 +1,45 @@
+name: UnitTests
+
+on:
+  workflow_call:
+    inputs:
+      src_path:
+        description: 'src_path'
+        required: false
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  UnitTests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ["3.9", "3.10"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{matrix.version}}
+          cache: 'poetry'
+      - name: Install dependencies
+        run: |
+          cd ${{ inputs.src_path }}
+          poetry install
+        shell: bash
+
+      - name: Run tests
+        run: |
+          cd ${{ inputs.src_path }}
+          poetry run pytest tests
+        shell: bash

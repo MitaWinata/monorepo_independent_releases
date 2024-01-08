@@ -1,0 +1,24 @@
+name: FullWorkflow-PR-a
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'model/a/**'
+
+jobs:
+  style:
+    uses: ./../.github/workflows/style.yml
+  tests_a:
+    uses: ./../.github/workflows/tests.yml
+    with:
+      src_path: "model/a"
+  python_style_a:
+    uses: ./../.github/workflows/python_style.yml
+    with:
+      src_path: "model/a"
+  docker_a:
+    uses: ./../.github/workflows/docker.yml
+    with:
+      build_context: "a"

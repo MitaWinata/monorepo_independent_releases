@@ -1,0 +1,46 @@
+name: CheckStyle
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  CheckCommitStyle:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install commitlint dependencies
+        run: |
+            npm i --global "@commitlint/config-conventional@17" "@commitlint/cli@17"
+        shell: bash
+      - name: Conventional Commit Linting
+        run: |
+          # Linting commits from source branch tip to target branch tip
+          commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose --config ./.github/config/commitlint.config.js
+        shell: bash
+  CheckYamlMarkdownStyle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install tools
+        run: |
+          ./.github/scripts/install-agent-tools.sh
+        shell: bash
+      - name: Lint Markdown
+        run: |
+            markdownlint . -c ./.github/config/markdown-lint.config
+        shell: bash
+      - name: Lint YAML
+        run: |
+            yamllint -c ./.github/config/yaml-lint-config.yml --strict .
+        shell: bash

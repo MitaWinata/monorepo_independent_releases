@@ -1,0 +1,67 @@
+name: Release Workflow
+
+on:
+  workflow_call:
+    outputs:
+      a-release_created:
+        value: ${{ jobs.release_job.outputs.a-release_created }}
+      a-tag_name:
+        value: ${{ jobs.release_job.outputs.a-tag_name }}
+      b-release_created:
+        value: ${{ jobs.release_job.outputs.b-release_created }}
+      b-tag_name:
+        value: ${{ jobs.release_job.outputs.b-tag_name }}
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+  packages: write
+
+concurrency:
+  group: release
+
+jobs:
+  release_job:
+    runs-on: ubuntu-latest
+    outputs:
+      a-release_created: ${{ steps.create_output.outputs.a-release_created }}
+      a-tag_name: ${{ steps.create_output.outputs.a-tag_name }}
+      b-release_created: ${{ steps.create_output.outputs.b-release_created }}
+      b-tag_name: ${{ steps.create_output.outputs.b-tag_name }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Release with release-please
+        uses: google-github-actions/release-please-action@v3
+        id: release
+        with:
+          command: manifest
+          monorepo-tags: true
+          pull-request-header: ":robot: I have created a release"
+      - name: "Generate release-please output"
+        id: create_output
+        shell: bash
+        run: |
+          echo "a-release_created=$(echo ${{ steps.release.outputs['model/a--release_created'] }})" >> "$GITHUB_OUTPUT"
+          echo "a-tag_name=$(echo ${{ steps.release.outputs['model/a--tag_name'] }})" >> "$GITHUB_OUTPUT"
+          echo "b-release_created=$(echo ${{ steps.release.outputs['model/b--release_created'] }})" >> "$GITHUB_OUTPUT"
+          echo "b-tag_name=$(echo ${{ steps.release.outputs['model/b--tag_name'] }})" >> "$GITHUB_OUTPUT"
+  build_publish_a_image:
+    name: Build Publish a Image
+    uses: ./.github/workflows/docker.yml
+    needs: release_job
+    if: needs.release_job.outputs.a-release_created == 'true'
+    with:
+      image_tag: ${{ needs.release_job.outputs.a-tag_name }}
+      build_context: "a"
+  build_publish_b_image:
+    name: Build Publish b Image
+    uses: ./.github/workflows/docker.yml
+    needs: release_job
+    if: needs.release_job.outputs.b-release_created == 'true'
+    with:
+      image_tag: ${{ needs.release_job.outputs.b-tag_name }}
+      build_context: "b"

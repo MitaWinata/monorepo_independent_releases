@@ -1,0 +1,14 @@
+{
+  "packages": {
+    "model/a": {
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "python",
+      "component": "a"
+    },
+    "model/b": {
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "python",
+      "component": "b"
+    }
+  }
+}

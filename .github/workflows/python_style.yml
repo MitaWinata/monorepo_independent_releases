@@ -1,0 +1,50 @@
+name: CheckStyle
+
+on:
+  workflow_call:
+    inputs:
+      src_path:
+        description: 'src_path'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  CheckCodeStyle:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ["3.9", "3.10"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{matrix.version}}
+          cache: 'poetry'
+
+      - name: Install dependencies
+        run: |
+          cd ${{ inputs.src_path }}
+          poetry install --only dev
+        shell: bash
+
+      - name: Run isort
+        run: |
+          cd ${{ inputs.src_path }}
+          poetry run isort --check --profile black .
+        shell: bash
+
+      - name: Run black
+        run: |
+          cd ${{ inputs.src_path }}
+          poetry run black --check --diff .
+        shell: bash
