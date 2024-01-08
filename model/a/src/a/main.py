@@ -1,2 +1,2 @@
 def main():
-    print("Model A!")
+    print("Model A")
