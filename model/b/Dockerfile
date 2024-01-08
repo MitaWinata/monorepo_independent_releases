@@ -1,6 +1,6 @@
 FROM python:3.9.18-slim AS base
 
-RUN apt-get update \
+RUN apt-get update && \
     apt-get clean && apt-get autoclean && apt-get autoremove
 
 ENV PYTHONUNBUFFERED=1
